@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>sharkfin — Wootility-style Configurator</title>
+<style>
+  :root {
+    --bg: #0d0d0f;
+    --panel: #16161a;
+    --panel-hover: #1e1e24;
+    --border: #2a2a32;
+    --text: #e8e8ed;
+    --text-dim: #8a8a96;
+    --accent: #f5c518;
+    --accent-hover: #ffd84d;
+    --purple: #6c5ce7;
+    --key-bg: #2a2a32;
+    --key-selected: #6c5ce7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+  }
+  .sidebar {
+    width: 240px;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 16px 0;
+  }
+  .logo {
+    padding: 0 20px 20px;
+    font-weight: 700;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-icon {
+    width: 28px; height: 28px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    color: #000; font-weight: 800;
+  }
+  .nav-section { padding: 8px 12px; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-top: 12px; }
+  .nav-item {
+    padding: 10px 20px;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 14px;
+    color: var(--text-dim);
+    transition: all 0.15s;
+  }
+  .nav-item:hover { background: var(--panel-hover); color: var(--text); }
+  .nav-item.active { background: #222228; color: var(--text); border-left: 3px solid var(--accent); }
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar {
+    height: 64px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px;
+  }
+  .profile-pill {
+    background: #222228;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .save-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .save-btn:hover { background: var(--accent-hover); }
+  .content { flex: 1; display: flex; overflow: hidden; }
+  .keyboard-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: #111114;
+  }
+  .keyboard {
+    display: grid;
+    grid-template-columns: repeat(15, 42px);
+    gap: 6px;
+    background: #1a1a1f;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+  .key {
+    height: 42px;
+    background: var(--key-bg);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 500;
+    color: #fff;
+    cursor: pointer;
+    user-select: none;
+    border: 1px solid #333;
+    transition: all 0.1s;
+  }
+  .key:hover { background: #35353d; }
+  .key.selected { background: var(--key-selected); border-color: #8b7cf7; }
+  .key.wide { grid-column: span 2; }
+  .key.space { grid-column: span 6; }
+  .settings-panel {
+    width: 360px;
+    background: var(--panel);
+    border-left: 1px solid var(--border);
+    padding: 20px;
+    overflow-y: auto;
+  }
+  .panel-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+  .setting-group {
+    background: #1e1e24;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .setting-label { font-size: 13px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); }
+  .value { color: var(--accent); font-weight: 600; }
+  .toggle {
+    width: 40px; height: 22px;
+    background: #333;
+    border-radius: 11px;
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .toggle.on { background: var(--accent); }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    top: 2px; left: 2px;
+    transition: 0.2s;
+  }
+  .toggle.on::after { left: 20px; }
+  .section { display: none; }
+  .section.active { display: block; }
+  .connect-bar {
+    background: #1a1a1f;
+    padding: 12px 20px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-dim);
+    border-top: 1px solid var(--border);
+  }
+  select {
+    width: 100%;
+    padding: 8px;
+    background: #222;
+    color: #fff;
+    border: 1px solid #333;
+    border-radius: 6px;
+    margin-top: 8px;
+  }
+  .btn {
+    background: var(--purple);
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+  }
+  .btn.secondary { background: #333; }
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">S</div>
+    sharkfin
+  </div>
+  <div class="nav-section">Keyboard</div>
+  <div class="nav-item active" data-section="quick">Quick Settings</div>
+  <div class="nav-item" data-section="actuation">Actuation Point</div>
+  <div class="nav-item" data-section="rapid">Rapid Trigger</div>
+  <div class="nav-item" data-section="rgb">RGB Lighting</div>
+  <div class="nav-item" data-section="remap">Remap</div>
+  <div class="nav-item" data-section="macros">Macros</div>
+  <div class="nav-item" data-section="device">Device</div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="profile-pill">
+      <span style="color:var(--accent)">●</span> Gaming Profile
+    </div>
+    <button class="save-btn">Save to Keyboard</button>
+  </div>
+
+  <div class="content">
+    <div class="keyboard-area">
+      <div class="keyboard" id="keyboard"></div>
+    </div>
+
+    <div class="settings-panel">
+      <div class="section active" id="quick">
+        <div class="panel-title">Quick Settings</div>
+        <div class="setting-group">
+          <div class="setting-label">Actuation Point <span class="value" id="act-val">1.0 mm</span></div>
+          <input type="range" min="0.1" max="4.0" step="0.1" value="1.0" id="act-slider">
+        </div>
+        <div class="setting-group">
+          <div class="setting-label">Rapid Trigger <span class="toggle on"></span></div>
+          <div class="setting-label" style="margin-top:12px">Sensitivity <span class="value">0.3 mm</span></div>
+          <input type="range" min="0.1" max="2.0" step="0.1" value="0.3">
+        </div>
+        <div class="setting-group">
+          <div class="setting-label">RGB Brightness <span class="value">80%</span></div>
+          <input type="range" min="0" max="100" value="80">
+        </div>
+      </div>
+
+      <div class="section" id="actuation">
+        <div class="panel-title">Actuation Point</div>
+        <p style="color:var(--text-dim);font-size:13px;margin-bottom:16px">Set how far a key must be pressed before it registers.</p>
+        <div class="setting-group">
+          <div class="setting-label">Global Actuation <span class="value">1.2 mm</span></div>
+          <input type="range" min="0.1" max="4.0" step="0.1" value="1.2">
+        </div>
+        <div class="setting-group">
+          <div class="setting-label">Per-key mode <span class="toggle"></span></div>
+        </div>
+      </div>
+
+      <div class="section" id="rapid">
+        <div class="panel-title">Rapid Trigger</div>
+        <p style="color:var(--text-dim);font-size:13px;margin-bottom:16px">Key resets the moment you start releasing it.</p>
+        <div class="setting-group">
+          <div class="setting-label">Enable Rapid Trigger <span class="toggle on"></span></div>
+        </div>
+        <div class="setting-group">
+          <div class="setting-label">Sensitivity <span class="value">0.2 mm</span></div>
+          <input type="range" min="0.1" max="1.5" step="0.1" value="0.2">
+        </div>
+      </div>
+
+      <div class="section" id="rgb">
+        <div class="panel-title">RGB Lighting</div>
+        <div class="setting-group">
+          <div class="setting-label">Effect</div>
+          <select>
+            <option>Solid</option>
+            <option>Wave</option>
+            <option>Rainbow</option>
+            <option>Reactive</option>
+            <option>Breathing</option>
+          </select>
+        </div>
+        <div class="setting-group">
+          <div class="setting-label">Brightness <span class="value">100%</span></div>
+          <input type="range" min="0" max="100" value="100">
+        </div>
+        <div class="setting-group">
+          <div class="setting-label">Speed <span class="value">50%</span></div>
+          <input type="range" min="0" max="100" value="50">
+        </div>
+      </div>
+
+      <div class="section" id="remap">
+        <div class="panel-title">Remap</div>
+        <p style="color:var(--text-dim);font-size:13px;margin-bottom:16px">Click a key on the keyboard, then choose its new function.</p>
+        <div class="setting-group">
+          <div class="setting-label">Selected: <span id="selected-key">None</span></div>
+          <select>
+            <option>Default</option>
+            <option>Macro 1</option>
+            <option>Media Play/Pause</option>
+            <option>Volume Up</option>
+            <option>Layer Switch</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section" id="macros">
+        <div class="panel-title">Macros</div>
+        <p style="color:var(--text-dim);font-size:13px;margin-bottom:16px">50 onboard macro slots available.</p>
+        <div class="setting-group">
+          <button class="btn">Record New Macro</button>
+        </div>
+      </div>
+
+      <div class="section" id="device">
+        <div class="panel-title">Device</div>
+        <div class="setting-group">
+          <div class="setting-label">Windows Key Lock <span class="toggle"></span></div>
+        </div>
+        <div class="setting-group">
+          <div class="setting-label">WASD / Arrow Swap <span class="toggle"></span></div>
+        </div>
+        <div class="setting-group">
+          <div class="setting-label">Debounce</div>
+          <input type="range" min="0" max="20" value="5" style="margin-top:8px">
+        </div>
+        <div class="setting-group">
+          <button class="btn secondary">Factory Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connect-bar">
+    Wootility-style UI prototype — demo mode (WebHID connection uses the main sharkfin protocol)
+  </div>
+</div>
+
+<script>
+  const layout = [
+    ["Esc","F1","F2","F3","F4","F5","F6","F7","F8","F9","F10","F11","F12","Prt","Del"],
+    ["`","1","2","3","4","5","6","7","8","9","0","-","=","Backspace"],
+    ["Tab","Q","W","E","R","T","Y","U","I","O","P","[","]","\\"],
+    ["Caps","A","S","D","F","G","H","J","K","L",";","'","Enter"],
+    ["Shift","Z","X","C","V","B","N","M",",",".","/","Shift","↑"],
+    ["Ctrl","Win","Alt","Space","Alt","Fn","←","↓","→"]
+  ];
+
+  const keyboard = document.getElementById("keyboard");
+  layout.forEach(row => {
+    row.forEach(label => {
+      const k = document.createElement("div");
+      k.className = "key";
+      k.textContent = label;
+      if (["Backspace","Enter","Shift"].includes(label)) k.classList.add("wide");
+      if (label === "Space") k.classList.add("space");
+      k.addEventListener("click", () => {
+        document.querySelectorAll(".key.selected").forEach(el => el.classList.remove("selected"));
+        k.classList.add("selected");
+        document.getElementById("selected-key").textContent = label;
+      });
+      keyboard.appendChild(k);
+    });
+  });
+
+  document.querySelectorAll(".nav-item").forEach(item => {
+    item.addEventListener("click", () => {
+      document.querySelectorAll(".nav-item").forEach(i => i.classList.remove("active"));
+      item.classList.add("active");
+      document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+      document.getElementById(item.dataset.section).classList.add("active");
+    });
+  });
+
+  document.getElementById("act-slider")?.addEventListener("input", e => {
+    document.getElementById("act-val").textContent = parseFloat(e.target.value).toFixed(1) + " mm";
+  });
+
+  document.querySelectorAll(".toggle").forEach(t => {
+    t.addEventListener("click", () => t.classList.toggle("on"));
+  });
+</script>
+</body>
+</html>
