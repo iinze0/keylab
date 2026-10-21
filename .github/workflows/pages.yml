@@ -1,4 +1,4 @@
-name: Deploy Web Configurator to GitHub Pages
+name: Deploy Keylab to GitHub Pages
 
 on:
   push:
@@ -16,46 +16,15 @@ concurrency:
 
 jobs:
   build:
-    name: Build web configurator
+    name: Prepare site
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: app/package-lock.json
-
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32-unknown-unknown
-
-      - uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: app/src-web
-
-      - name: Install wasm-pack
-        run: curl -sSL https://rustwasm.github.io/wasm-pack/installer/init.sh | sh
-
-      - name: Install frontend dependencies
-        working-directory: app
-        run: npm ci
-
-      - name: Build web version
-        working-directory: app
-        run: |
-          npm run web:wasm
-          npx vite build --config vite.web.config.ts --base /sharkfin/
-          if [ -f dist-web/web.html ]; then mv dist-web/web.html dist-web/index.html; fi
-          # Ensure index exists
-          if [ ! -f dist-web/index.html ]; then echo "ERROR: no index.html" && ls -la dist-web && exit 1; fi
-          node scripts/gen-sw.mjs || true
-
-      - name: Upload Pages artifact
+      - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: app/dist-web
+          path: site
 
   deploy:
     name: Deploy to GitHub Pages
