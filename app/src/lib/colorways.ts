@@ -9,11 +9,14 @@ export interface Colorway {
 }
 
 export const COLORWAYS: Colorway[] = [
-  { id: "carbon", label: "Carbon", dark: true, swatch: ["#1a1a1e", "#f5c518"] },
-  { id: "ocean", label: "Ocean", dark: true, swatch: ["#0f1f2e", "#3ecf8e"] },
-  { id: "ember", label: "Ember", dark: true, swatch: ["#2a1810", "#ff6b35"] },
-  { id: "arctic", label: "Arctic", dark: false, swatch: ["#eef4f8", "#4a9eff"] },
-  { id: "violet", label: "Violet", dark: true, swatch: ["#1e1630", "#a78bfa"] },
+  { id: "noir", label: "Noir", dark: true, swatch: ["#0c0c10", "#4f8cff"] },
+  { id: "gold", label: "Gold", dark: true, swatch: ["#1c1814", "#e8b84a"] },
+  { id: "jade", label: "Jade", dark: true, swatch: ["#0f1c18", "#2dd4bf"] },
+  { id: "rose", label: "Rose", dark: true, swatch: ["#1a1216", "#f472b6"] },
+  { id: "frost", label: "Frost", dark: false, swatch: ["#f4f7fa", "#60a5fa"] },
+  { id: "amber", label: "Amber", dark: true, swatch: ["#1f1610", "#f59e0b"] },
+  { id: "neon", label: "Neon", dark: true, swatch: ["#0a0a12", "#22d3ee"] },
+  { id: "sage", label: "Sage", dark: false, swatch: ["#f0f4f0", "#4ade80"] },
 ];
 
 const KEY = "sharkfin.colorway";
