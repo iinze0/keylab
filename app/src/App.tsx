@@ -12,6 +12,7 @@ import {
   Settings2,
   Usb,
   Magnet,
+  Info,
 } from "lucide-react";
 import {
   Select,
@@ -46,6 +47,7 @@ import PaintPage from "@/pages/Paint";
 import MacrosPage from "@/pages/Macros";
 import ContributePage from "@/pages/Contribute";
 import CheckPage from "@/pages/Check";
+import AboutPage from "@/pages/About";
 import CheckIcon from "@/components/CheckIcon";
 import SwitchesPage, { hasSwitches } from "@/pages/Switches";
 
@@ -57,7 +59,8 @@ type Page =
   | "switches"
   | "macros"
   | "settings"
-  | "contribute";
+  | "contribute"
+  | "about";
 
 const readOnly = (d: ConnectedDevice) => d.readOnly;
 
@@ -74,6 +77,7 @@ const NAV: {
   { id: "macros", label: "Macros", icon: ListMusic },
   { id: "settings", label: "Device", icon: Settings2 },
   { id: "contribute", label: "Contribute", icon: HeartHandshake },
+  { id: "about", label: "About", icon: Info },
 ];
 
 export default function App() {
@@ -158,13 +162,16 @@ export default function App() {
   return (
     <div className="flex h-screen bg-background text-foreground">
       <aside className="flex w-56 shrink-0 flex-col bg-sidebar">
-        <div className="flex items-center gap-2 px-4 py-4">
-          <span className="text-primary">
-            <SharkfinLogo size={26} />
-          </span>
-          <span className="font-mono text-lg font-bold tracking-tighter">
-            Keylab
-          </span>
+        <div className="flex flex-col gap-0.5 px-4 py-4">
+          <div className="flex items-center gap-2">
+            <span className="text-primary">
+              <SharkfinLogo size={26} />
+            </span>
+            <span className="font-mono text-lg font-bold tracking-tighter">
+              Keylab
+            </span>
+          </div>
+          <span className="pl-9 text-[10px] text-muted-foreground">Keyboard configurator</span>
         </div>
         <Separator />
         <nav className="flex flex-col gap-1 p-2">
@@ -270,6 +277,9 @@ export default function App() {
               ))}
             </SelectContent>
           </Select>
+          <div className="pt-1 text-center text-[10px] text-muted-foreground">
+            Keylab · <a href="https://github.com/iinze0/sharkfin" target="_blank" rel="noreferrer" className="hover:underline">GitHub</a>
+          </div>
         </div>
       </aside>
 
@@ -310,6 +320,7 @@ export default function App() {
               onCheck={() => setPage("check")}
             />
           )}
+          {page === "about" && <AboutPage />}
         </div>
       </main>
       {!device && openFailed && <PermissionNotice inputMonitoring={inputMonitoring} onRefresh={doScan} />}
