@@ -9,11 +9,11 @@ export interface Colorway {
 }
 
 export const COLORWAYS: Colorway[] = [
-  { id: "abyss", label: "Abyss", dark: true, swatch: ["#232c3d", "#6ed3ee"] },
-  { id: "olivia", label: "Olivia", dark: true, swatch: ["#2b2725", "#e8b4a4"] },
-  { id: "laser", label: "Laser", dark: true, swatch: ["#2b2145", "#e750b8"] },
-  { id: "botanical", label: "Botanical", dark: false, swatch: ["#e8efe6", "#3c7a5a"] },
-  { id: "8008", label: "8008", dark: true, swatch: ["#2a2c33", "#e06e73"] },
+  { id: "carbon", label: "Carbon", dark: true, swatch: ["#1a1a1e", "#f5c518"] },
+  { id: "ocean", label: "Ocean", dark: true, swatch: ["#0f1f2e", "#3ecf8e"] },
+  { id: "ember", label: "Ember", dark: true, swatch: ["#2a1810", "#ff6b35"] },
+  { id: "arctic", label: "Arctic", dark: false, swatch: ["#eef4f8", "#4a9eff"] },
+  { id: "violet", label: "Violet", dark: true, swatch: ["#1e1630", "#a78bfa"] },
 ];
 
 const KEY = "sharkfin.colorway";
@@ -31,5 +31,3 @@ export function initColorway(): string {
   applyColorway(saved);
   return COLORWAYS.some((c) => c.id === saved) ? saved : COLORWAYS[0].id;
 }
-
-
