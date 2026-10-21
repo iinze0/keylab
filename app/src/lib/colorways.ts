@@ -17,6 +17,10 @@ export const COLORWAYS: Colorway[] = [
   { id: "amber", label: "Amber", dark: true, swatch: ["#1f1610", "#f59e0b"] },
   { id: "neon", label: "Neon", dark: true, swatch: ["#0a0a12", "#22d3ee"] },
   { id: "sage", label: "Sage", dark: false, swatch: ["#f0f4f0", "#4ade80"] },
+  { id: "midnight", label: "Midnight", dark: true, swatch: ["#0a0e1a", "#818cf8"] },
+  { id: "coral", label: "Coral", dark: true, swatch: ["#1a1014", "#fb7185"] },
+  { id: "ice", label: "Ice", dark: false, swatch: ["#f8fafc", "#38bdf8"] },
+  { id: "forest", label: "Forest", dark: true, swatch: ["#0c1610", "#34d399"] },
 ];
 
 const KEY = "sharkfin.colorway";
