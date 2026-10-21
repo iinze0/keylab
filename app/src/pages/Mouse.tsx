@@ -4,7 +4,7 @@ export default function MousePage() {
   return (
     <div className="flex h-full flex-col">
       <iframe
-        src="https://control.openmouse.app/"
+        src="https://iinze0.github.io/openmouse/"
         title="OpenMouse"
         className="h-full w-full flex-1 border-0"
         allow="hid"
