@@ -46,8 +46,10 @@ jobs:
         working-directory: app
         run: |
           npm run web:wasm
-          npx vite build --config vite.web.config.ts --base /keylab/
+          npx vite build --config vite.web.config.ts --base /
           if [ -f dist-web/web.html ]; then mv dist-web/web.html dist-web/index.html; fi
+          # Keep CNAME in the deploy output
+          cp CNAME dist-web/CNAME 2>/dev/null || true
           node scripts/gen-sw.mjs || true
 
       - name: Upload Pages artifact
