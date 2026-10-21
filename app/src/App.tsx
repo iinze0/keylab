@@ -12,8 +12,7 @@ import {
   Settings2,
   Usb,
   Magnet,
-  Info,
-  Menu,
+  Mouse,
 } from "lucide-react";
 import {
   Select,
@@ -37,8 +36,6 @@ import {
   type InputMonitoringStatus,
 } from "@/lib/backend";
 import ColorwayPicker from "@/components/ColorwayPicker";
-import AccentPicker, { initAccent } from "@/components/AccentPicker";
-import Onboarding from "@/components/Onboarding";
 import SharkfinLogo from "@/components/SharkfinLogo";
 import PermissionNotice from "@/components/PermissionNotice";
 import ReadOnlyNotice from "@/components/ReadOnlyNotice";
@@ -50,8 +47,8 @@ import PaintPage from "@/pages/Paint";
 import MacrosPage from "@/pages/Macros";
 import ContributePage from "@/pages/Contribute";
 import CheckPage from "@/pages/Check";
-import AboutPage from "@/pages/About";
 import CheckIcon from "@/components/CheckIcon";
+import MousePage from "@/pages/Mouse";
 import SwitchesPage, { hasSwitches } from "@/pages/Switches";
 
 type Page =
@@ -63,7 +60,7 @@ type Page =
   | "macros"
   | "settings"
   | "contribute"
-  | "about";
+  | "mouse";
 
 const readOnly = (d: ConnectedDevice) => d.readOnly;
 
@@ -80,11 +77,11 @@ const NAV: {
   { id: "macros", label: "Macros", icon: ListMusic },
   { id: "settings", label: "Device", icon: Settings2 },
   { id: "contribute", label: "Contribute", icon: HeartHandshake },
-  { id: "about", label: "About", icon: Info },
 ];
 
 export default function App() {
   const [page, setPage] = useState<Page>("lighting");
+  const [mode, setMode] = useState<"keyboard" | "mouse">("keyboard");
   const [device, setDevice] = useState<ConnectedDevice | null>(null);
   const [unknown, setUnknown] = useState<DiscoveredUnknown | null>(null);
   const [openFailed, setOpenFailed] = useState(false);
@@ -92,13 +89,9 @@ export default function App() {
   const [stalled, setStalled] = useState(false);
   const [asleep, setAsleep] = useState(false);
   const [scanning, setScanning] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const guided = useRef<number | null>(null);
   const guidedUnknown = useRef<string | null>(null);
-
-  useEffect(() => {
-    initAccent();
-  }, []);
+  const touchStart = useRef<number | null>(null);
 
   useEffect(() => {
     if (device && readOnly(device) && guided.current !== device.deviceId) {
@@ -130,7 +123,6 @@ export default function App() {
       .catch(() => {
         applied.current = null;
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [device?.spec.id, device?.path]);
 
   const needsCheck =
@@ -167,183 +159,174 @@ export default function App() {
     };
   }, [doScan]);
 
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStart.current = e.touches[0].clientX;
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchStart.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchStart.current;
+    if (Math.abs(dx) > 60) {
+      setMode(dx < 0 ? "mouse" : "keyboard");
+    }
+    touchStart.current = null;
+  };
+
   return (
-    <div className="flex h-screen bg-background text-foreground">
-      <Onboarding />
-      <button
-        className="fixed left-2 top-2 z-50 rounded-md bg-sidebar p-2 md:hidden"
-        onClick={() => setSidebarOpen((v) => !v)}
-        aria-label="Menu"
-      >
-        <Menu className="h-5 w-5" />
-      </button>
-      <aside className={cn("keylab-sidebar flex w-56 shrink-0 flex-col bg-sidebar", sidebarOpen && "open")}>
-        <div className="flex flex-col gap-0.5 px-4 py-4">
-          <div className="flex items-center gap-2">
-            <span className="text-primary">
-              <SharkfinLogo size={26} />
-            </span>
-            <span className="font-mono text-lg font-bold tracking-tighter">
-              Keylab
-            </span>
-          </div>
-          <span className="pl-9 text-[10px] text-muted-foreground">Keyboard configurator</span>
-        </div>
-        <Separator />
-        <nav className="flex flex-col gap-1 p-2">
-          {NAV.filter(
-            ({ id }) =>
-              (id !== "switches" || hasSwitches(device)) && (id !== "check" || needsCheck),
-          ).map(
-            ({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                onClick={() => {
-                  setPage(id);
-                  setSidebarOpen(false);
-                }}
-                className={cn(
-                  "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
-                  page === id
-                    ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
-                    : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground",
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                {t(label)}
-              </button>
-            ),
+    <div className="flex h-screen flex-col bg-background text-foreground" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+      <div className="flex items-center justify-center gap-1 border-b bg-sidebar px-2 py-1.5">
+        <button
+          onClick={() => setMode("keyboard")}
+          className={cn(
+            "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-colors",
+            mode === "keyboard" ? "bg-sidebar-accent font-medium" : "text-muted-foreground hover:bg-sidebar-accent/50",
           )}
-        </nav>
-        <div className="mt-auto space-y-2 p-3">
-          <div className="rounded-xl bg-sidebar-accent/60 p-3">
-            <div className="flex items-center gap-2">
-              {device?.link === "receiver" ? (
-                <Radio className="h-4 w-4 text-(--key-accent)" />
-              ) : (
-                <Usb
-                  className={cn(
-                    "h-4 w-4",
-                    device ? "text-(--key-accent)" : "text-muted-foreground",
-                  )}
-                />
+        >
+          <Keyboard className="h-4 w-4" /> Keyboard
+        </button>
+        <button
+          onClick={() => setMode("mouse")}
+          className={cn(
+            "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-colors",
+            mode === "mouse" ? "bg-sidebar-accent font-medium" : "text-muted-foreground hover:bg-sidebar-accent/50",
+          )}
+        >
+          <Mouse className="h-4 w-4" /> Mouse
+        </button>
+      </div>
+
+      {mode === "keyboard" ? (
+        <div className="flex flex-1 overflow-hidden">
+          <aside className="flex w-56 shrink-0 flex-col bg-sidebar">
+            <div className="flex items-center gap-2 px-4 py-4">
+              <span className="text-primary">
+                <SharkfinLogo size={26} />
+              </span>
+              <span className="font-mono text-lg font-bold tracking-tighter">Keylab</span>
+            </div>
+            <Separator />
+            <nav className="flex flex-col gap-1 p-2">
+              {NAV.filter(
+                ({ id }) =>
+                  (id !== "switches" || hasSwitches(device)) && (id !== "check" || needsCheck),
+              ).map(
+                ({ id, label, icon: Icon }) => (
+                  <button
+                    key={id}
+                    onClick={() => setPage(id)}
+                    className={cn(
+                      "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
+                      page === id
+                        ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
+                        : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground",
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {t(label)}
+                  </button>
+                ),
               )}
-              <div className="min-w-0">
-                <div className="truncate text-sm font-medium">
-                  {device
-                    ? deviceLabel(device.spec)
-                    : stalled
-                      ? "Needs a replug"
-                      : asleep
-                        ? t("Keyboard asleep")
-                        : unknown
-                          ? unknown.product || "Unrecognized keyboard"
-                          : scanning
-                            ? "Scanning…"
-                            : "No device"}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {device ? (
-                    <span
-                      className={cn(
-                        "mt-1 block truncate",
-                        !readOnly(device) && "text-(--key-accent)",
-                      )}
-                    >
-                      {device.spec.unregistered
-                        ? t("not in the registry · {family}", {
-                            family: device.spec.family ?? "",
-                          })
-                        : readOnly(device)
-                          ? t("read-only")
-                          : device.link === "receiver"
-                            ? t("2.4 GHz · id {id}", { id: device.deviceId }) +
-                              (device.battery === null
-                                ? ""
-                                : ` · ${device.battery}%`)
-                            : t("USB · id {id}", { id: device.deviceId })}
-                    </span>
-                  ) : stalled ? (
-                    t("Unplug, wait 10s, plug back in")
-                  ) : asleep ? (
-                    t("Press a key, or connect by cable")
-                  ) : unknown ? (
-                    <span className="mt-1 block">
-                      {unknown.deviceId === null
-                        ? t("no answer")
-                        : t("not in the registry")}
-                    </span>
+            </nav>
+            <div className="mt-auto space-y-2 p-3">
+              <div className="rounded-xl bg-sidebar-accent/60 p-3">
+                <div className="flex items-center gap-2">
+                  {device?.link === "receiver" ? (
+                    <Radio className="h-4 w-4 text-(--key-accent)" />
                   ) : (
-                    t("Connect by cable")
+                    <Usb className={cn("h-4 w-4", device ? "text-(--key-accent)" : "text-muted-foreground")} />
                   )}
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-medium">
+                      {device
+                        ? deviceLabel(device.spec)
+                        : stalled
+                          ? "Needs a replug"
+                          : asleep
+                            ? t("Keyboard asleep")
+                            : unknown
+                              ? unknown.product || "Unrecognized keyboard"
+                              : scanning
+                                ? "Scanning…"
+                                : "No device"}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {device ? (
+                        <span className={cn("mt-1 block truncate", !readOnly(device) && "text-(--key-accent)")}>
+                          {device.spec.unregistered
+                            ? t("not in the registry · {family}", { family: device.spec.family ?? "" })
+                            : readOnly(device)
+                              ? t("read-only")
+                              : device.link === "receiver"
+                                ? t("2.4 GHz · id {id}", { id: device.deviceId }) +
+                                  (device.battery === null ? "" : ` · ${device.battery}%`)
+                                : t("USB · id {id}", { id: device.deviceId })}
+                        </span>
+                      ) : stalled ? (
+                        t("Unplug, wait 10s, plug back in")
+                      ) : asleep ? (
+                        t("Press a key, or connect by cable")
+                      ) : unknown ? (
+                        <span className="mt-1 block">
+                          {unknown.deviceId === null ? t("no answer") : t("not in the registry")}
+                        </span>
+                      ) : (
+                        t("Connect by cable")
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
+              <ColorwayPicker />
+              <Select value={locale} onValueChange={setLocale}>
+                <SelectTrigger aria-label={t("Language")} className="h-8 w-full text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {LOCALES.map(([value, label]) => (
+                    <SelectItem key={value} value={value} className="text-xs">
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          </div>
-          <ColorwayPicker />
-          <AccentPicker />
-          <Select value={locale} onValueChange={setLocale}>
-            <SelectTrigger
-              aria-label={t("Language")}
-              className="h-8 w-full text-xs"
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {LOCALES.map(([value, label]) => (
-                <SelectItem key={value} value={value} className="text-xs">
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div className="pt-1 text-center text-[10px] text-muted-foreground">
-            Keylab · <a href="https://github.com/iinze0/sharkfin" target="_blank" rel="noreferrer" className="hover:underline">GitHub</a>
-          </div>
-        </div>
-      </aside>
+          </aside>
 
-      <main className="keylab-main flex flex-1 flex-col overflow-hidden">
-        {device && device.spec.unregistered ? (
-          <UnregisteredNotice
-            device={device}
-            onAllowed={doScan}
-            onCheck={() => setPage("check")}
-            onContribute={() => setPage("contribute")}
-          />
-        ) : (
-          device &&
-          readOnly(device) && (
-            <ReadOnlyNotice onContribute={() => setPage("contribute")} />
-          )
-        )}
-        <div className="flex-1 overflow-auto">
-          {page === "check" && (
-            <CheckPage
-              device={device}
-              onContribute={() => setPage("contribute")}
-              onRescan={doScan}
-            />
-          )}
-          {page === "lighting" && <LightingPage device={device} />}
-          {page === "paint" && <PaintPage device={device} />}
-          {page === "keymap" && (
-            <KeymapPage device={device} onContribute={() => setPage("contribute")} />
-          )}
-          {page === "switches" && <SwitchesPage device={device} />}
-          {page === "macros" && <MacrosPage device={device} />}
-          {page === "settings" && <DevicePage device={device} />}
-          {page === "contribute" && (
-            <ContributePage
-              device={device}
-              unknown={unknown}
-              onCheck={() => setPage("check")}
-            />
-          )}
-          {page === "about" && <AboutPage />}
+          <main className="flex flex-1 flex-col overflow-hidden">
+            {device && device.spec.unregistered ? (
+              <UnregisteredNotice
+                device={device}
+                onAllowed={doScan}
+                onCheck={() => setPage("check")}
+                onContribute={() => setPage("contribute")}
+              />
+            ) : (
+              device && readOnly(device) && <ReadOnlyNotice onContribute={() => setPage("contribute")} />
+            )}
+            <div className="flex-1 overflow-auto">
+              {page === "check" && (
+                <CheckPage device={device} onContribute={() => setPage("contribute")} onRescan={doScan} />
+              )}
+              {page === "lighting" && <LightingPage device={device} />}
+              {page === "paint" && <PaintPage device={device} />}
+              {page === "keymap" && <KeymapPage device={device} onContribute={() => setPage("contribute")} />}
+              {page === "switches" && <SwitchesPage device={device} />}
+              {page === "macros" && <MacrosPage device={device} />}
+              {page === "settings" && <DevicePage device={device} />}
+              {page === "contribute" && (
+                <ContributePage device={device} unknown={unknown} onCheck={() => setPage("check")} />
+              )}
+            </div>
+          </main>
         </div>
-      </main>
-      {!device && openFailed && <PermissionNotice inputMonitoring={inputMonitoring} onRefresh={doScan} />}
+      ) : (
+        <div className="flex-1 overflow-hidden">
+          <MousePage />
+        </div>
+      )}
+
+      {!device && openFailed && mode === "keyboard" && (
+        <PermissionNotice inputMonitoring={inputMonitoring} onRefresh={doScan} />
+      )}
       <Toaster position="bottom-right" />
     </div>
   );
