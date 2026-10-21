@@ -47,7 +47,7 @@ jobs:
         run: |
           npm run web:wasm
           npx vite build --config vite.web.config.ts
-          mv dist-web/web.html dist-web/index.html
+          mv dist-web/web.html dist-web/index.html || true
           node scripts/gen-sw.mjs || true
 
       - name: Upload Pages artifact
