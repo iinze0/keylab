@@ -48,6 +48,8 @@ jobs:
           npm run web:wasm
           npx vite build --config vite.web.config.ts --base /sharkfin/
           if [ -f dist-web/web.html ]; then mv dist-web/web.html dist-web/index.html; fi
+          # Ensure index exists
+          if [ ! -f dist-web/index.html ]; then echo "ERROR: no index.html" && ls -la dist-web && exit 1; fi
           node scripts/gen-sw.mjs || true
 
       - name: Upload Pages artifact
