@@ -88,7 +88,6 @@ export default function App() {
   const guided = useRef<number | null>(null);
   const guidedUnknown = useRef<string | null>(null);
 
-  // Read-only: Contribute once per board, not on every scan.
   useEffect(() => {
     if (device && readOnly(device) && guided.current !== device.deviceId) {
       guided.current = device.deviceId;
@@ -96,7 +95,6 @@ export default function App() {
     }
   }, [device]);
 
-  // Unknown board: same.
   useEffect(() => {
     if (!device && unknown && guidedUnknown.current !== unknown.path) {
       guidedUnknown.current = unknown.path;
@@ -104,7 +102,6 @@ export default function App() {
     }
   }, [device, unknown]);
 
-  // Apply the check record once per connect. Sends nothing.
   const applied = useRef<string | null>(null);
   useEffect(() => {
     if (!device) {
@@ -124,8 +121,6 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [device?.spec.id, device?.path]);
 
-  // Setup tab while the board is unknown or read-only and the check has
-  // not been run. Everywhere else it is a button on Contribute.
   const needsCheck =
     !!device &&
     (device.spec.unregistered || device.readOnly) &&
@@ -168,7 +163,7 @@ export default function App() {
             <SharkfinLogo size={26} />
           </span>
           <span className="font-mono text-lg font-bold tracking-tighter">
-            sharkfin
+            Keylab
           </span>
         </div>
         <Separator />

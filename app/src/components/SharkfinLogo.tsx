@@ -8,33 +8,17 @@ export default function SharkfinLogo({ size = 24 }: { size?: number }) {
       viewBox="0 0 64 64"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      aria-label="sharkfin"
+      aria-label="Keylab"
       role="img"
     >
+      <rect width="64" height="64" rx="12" fill="#0e0e11" />
       <path
-        d="M9.5 46.5
-           C 11.5 33, 18 15.5, 36.5 7.2
-           C 37.6 6.7, 38.6 7.6, 38.2 8.7
-           C 36 14.5, 35.6 21.5, 39.4 28.2
-           C 40.1 29.4, 39.3 30.4, 38.1 30.2
-           C 36.9 30, 35.9 30.6, 36.6 31.8
-           C 40.5 38.1, 47.5 43, 55 46.5
-           Z"
-        fill="currentColor"
+        d="M12 12h16c7 0 13 6 13 13v6c0 4-2 7-5 9l6 10h-9l-6-9h-6v9H12V12zm10 9v8h6c3 0 5-2 5-5s-2-3-5-3h-6z"
+        fill="#f5c518"
       />
       <path
-        d="M3 52.5 C 8 48.5, 13 48.5, 18 52.5 S 28 56.5, 33 52.5 S 43 48.5, 48 52.5 S 58 56.5, 61 52.5"
-        stroke="currentColor"
-        strokeWidth="3.6"
-        strokeLinecap="round"
-        opacity="0.45"
-      />
-      <path
-        d="M14 59.5 C 17.5 56.7, 21 56.7, 24.5 59.5 S 31.5 62.3, 35 59.5"
-        stroke="currentColor"
-        strokeWidth="2.8"
-        strokeLinecap="round"
-        opacity="0.22"
+        d="M38 12l13 20-13 20h10l8-12 8 12h10l-13-20 13-20H59l-8 12-8-12H38z"
+        fill="#ffffff"
       />
     </svg>
   );
