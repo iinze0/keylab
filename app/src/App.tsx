@@ -13,6 +13,7 @@ import {
   Usb,
   Magnet,
   Info,
+  Menu,
 } from "lucide-react";
 import {
   Select,
@@ -36,6 +37,8 @@ import {
   type InputMonitoringStatus,
 } from "@/lib/backend";
 import ColorwayPicker from "@/components/ColorwayPicker";
+import AccentPicker, { initAccent } from "@/components/AccentPicker";
+import Onboarding from "@/components/Onboarding";
 import SharkfinLogo from "@/components/SharkfinLogo";
 import PermissionNotice from "@/components/PermissionNotice";
 import ReadOnlyNotice from "@/components/ReadOnlyNotice";
@@ -89,8 +92,13 @@ export default function App() {
   const [stalled, setStalled] = useState(false);
   const [asleep, setAsleep] = useState(false);
   const [scanning, setScanning] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const guided = useRef<number | null>(null);
   const guidedUnknown = useRef<string | null>(null);
+
+  useEffect(() => {
+    initAccent();
+  }, []);
 
   useEffect(() => {
     if (device && readOnly(device) && guided.current !== device.deviceId) {
@@ -161,7 +169,15 @@ export default function App() {
 
   return (
     <div className="flex h-screen bg-background text-foreground">
-      <aside className="flex w-56 shrink-0 flex-col bg-sidebar">
+      <Onboarding />
+      <button
+        className="fixed left-2 top-2 z-50 rounded-md bg-sidebar p-2 md:hidden"
+        onClick={() => setSidebarOpen((v) => !v)}
+        aria-label="Menu"
+      >
+        <Menu className="h-5 w-5" />
+      </button>
+      <aside className={cn("keylab-sidebar flex w-56 shrink-0 flex-col bg-sidebar", sidebarOpen && "open")}>
         <div className="flex flex-col gap-0.5 px-4 py-4">
           <div className="flex items-center gap-2">
             <span className="text-primary">
@@ -182,7 +198,10 @@ export default function App() {
             ({ id, label, icon: Icon }) => (
               <button
                 key={id}
-                onClick={() => setPage(id)}
+                onClick={() => {
+                  setPage(id);
+                  setSidebarOpen(false);
+                }}
                 className={cn(
                   "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
                   page === id
@@ -262,6 +281,7 @@ export default function App() {
             </div>
           </div>
           <ColorwayPicker />
+          <AccentPicker />
           <Select value={locale} onValueChange={setLocale}>
             <SelectTrigger
               aria-label={t("Language")}
@@ -283,7 +303,7 @@ export default function App() {
         </div>
       </aside>
 
-      <main className="flex flex-1 flex-col overflow-hidden">
+      <main className="keylab-main flex flex-1 flex-col overflow-hidden">
         {device && device.spec.unregistered ? (
           <UnregisteredNotice
             device={device}
